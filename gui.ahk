@@ -16,8 +16,6 @@ gui_init() {
 }
 
 
-
-
 #Space::
 gui_create:
 	global gui_state
@@ -65,6 +63,8 @@ gui_destroy() {
 
     ; Bring focus back to another window found on the desktop
     WinActivate
+	
+	return
 }
 	
 
@@ -77,89 +77,51 @@ InputChanged:
 
 ProcessInput(input) {
     
-	if EditText = rel%A_Space% 
+	if input = rel%A_Space% 
 	{
 		gui_destroy()
 		Reload
 	}
 	
-	if EditText = exit%A_Space%
+	if av = exit%A_Space%
 	{
 		gui_destroy()
 		ExitApp
 	}
 	
 	
-	loop, read, guicommands.txt
+	for k, v in LoadCommands()
 	{
-		command := StrSplit(A_LoopReadLine, ",")
-		
-		if (EditText = command[1] . A_Space) {
+		if (input = k . A_Space) {
 			gui_destroy()
-			Run % command[2]
+			Run % v
 		}
-	}
-	
-	
-	inputWords := StrSplit(EditText, A_Space)
-	
-	keywordsList := [new ExecuteKeyword(["note"], "Notepad"), new ExecuteKeyword(["g", "github"], "https://www.google.com")]
-	
-	lastMatchingObject = ; null
-	numKeywordMatches = 0
-	for j, keywordObj in keywordsList 
-	{
-		allWordsFound = 0
-		wordsFound = 0
-		for i, word in inputWords
-		{
-			for k, keyword in keywordObj.keywords
-			{
-				; track to see if we match all words expected for a given keyword object
-				if word = %keyword%
-				{
-					wordsFound := %wordsFound% + 1
-				}
-			}
-		}
-		
-		len := inputWords.Length()
-		; track how many different keyword objects match all the words
-		if wordsFound = %len%
-		{
-			numKeywordMatches = numKeywordMatches + 1
-			lastMatchingObject = keywordObj
-		}
-	}
-	
-	if numKeywordMatches = 1 
-	{
-		Run %lastMatchingObject%.path
 	}
 	
     return
 }
 
 
-class ExecuteKeyword
-{
-	;keywords := []
-	path := ""
-	args := ""
-	__New(keywords, path, args := "")
+LoadCommands() {
+	commands := []
+	loop, read, guicommands.txt
 	{
-		this.keywords := keywords ; ["test"]
-		this.path := path
-		this.args := args
+		rawline := A_LoopReadLine
+		
+		; ignore commented lines starting with ";"
+		if (SubStr(rawline, 1, 1) = ";") {
+			continue
+		}
+		
+		; ignore whitespace lines starting with ""
+		if (rawline = "") {
+			continue
+		}
+		
+		line := StrSplit(A_LoopReadLine, ",")
+		commands[line[1]] := line[2]
 	}
+	return commands
 }
 
 
-
-join( strArray )
-{
-  s := ""
-  for i,v in strArray
-    s .= ", " . v
-  return substr(s, 3)
-}

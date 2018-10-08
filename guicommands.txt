@@ -1,2 +1,7 @@
 gg,notepad
+
+
+; there were empty lines above this
+
+; some more comments
 bb,notepad
