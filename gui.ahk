@@ -11,6 +11,9 @@ gui_init() {
 	; keep track of the state of the GUI
 	global gui_state
 	gui_state = closed
+	
+	global allCommands
+	allCommands := GetAllCommandsAsListBox()
 
 	return
 }
@@ -30,16 +33,24 @@ gui_create:
 
     Gui, Margin, 4, 4
     Gui, +AlwaysOnTop -SysMenu +ToolWindow -caption +Border
-    Gui, Font, s11, Segoe UI	
+    Gui, Font, s11, Consolas	
 	
 	
     Gui, Add, Text, vgui_main_title, Search...
 	
-	
-    Gui, Font, s10, Segoe UI
+	; actual text input box
+    Gui, Font, s10, Consolas
     Gui, Add, Edit, vEditText gInputChanged
 	
+	; list box to list filtered command options
+	Gui, Add, ListBox, vListBoxSelection gListBoxSubmitted r7, %allCommands%
+	GuiControl, Choose, ListBoxSelection, 1
+	
+	; link to help document
     Gui, Add, Link, , <a href="help.html">Help</a>
+	
+	; hidden submit button to capture the <enter> key and submit the form
+	Gui, Add, Button, Default w0 h0 gButtonSubmittedWithEnter, OK
 	
     Gui, Show,, myGUI
     return
@@ -51,39 +62,59 @@ GuiEscape:
     return
 	
 	
-; gui_destroy: Destroy the GUI after use.
 #WinActivateForce
 gui_destroy() {
     global gui_state
-
     gui_state = closed
 
     ; Hide GUI
     Gui, Destroy
-
     ; Bring focus back to another window found on the desktop
     WinActivate
 	
 	return
 }
+
+ListBoxSubmitted:	
+	if(A_GuiEvent != "DoubleClick") {
+		return
+	}
 	
+	; submit gui so that listboxselection variable is set
+	Gui, Submit, NoHide	
+	ProcessInput(ListBoxSelection, "") ; no delimiter since we're just passing the exact command
+	
+	return
+
+	
+ButtonSubmittedWithEnter:
+	Gui, Submit, NoHide
+	ProcessInput(EditText, "")	
+	return
 
 ; The callback function when the text changes in the input field.
 InputChanged:
 	Gui, Submit, NoHide
-	ProcessInput(EditText)
+	ProcessInput(EditText, A_Space)
+	
+	filteredCommands := GetFilteredCommandsAsListBox(EditText)
+	GuiControl, -Redraw, ListBoxSelection		; To improve performance, don't redraw the list box until all items have been added.
+	GuiControl, , ListBoxSelection, |%filteredCommands%	; use a delimiter in front to clear all current contents before readding
+	GuiControl, +Redraw, ListBoxSelection
+	GuiControl, Choose, ListBoxSelection, 1
+
 	return
 
 
-ProcessInput(input) {
+ProcessInput(input, delimiter = " ") {
     
-	if input = rel%A_Space% 
+	if input = rel%delimiter% 
 	{
 		gui_destroy()
 		Reload
 	}
 	
-	if av = exit%A_Space%
+	if av = exit%delimiter%
 	{
 		gui_destroy()
 		ExitApp
@@ -92,7 +123,7 @@ ProcessInput(input) {
 	
 	for k, v in LoadCommands()
 	{
-		if (input = k . A_Space) {
+		if (input = k . delimiter) {
 			gui_destroy()
 			Run % v
 		}
@@ -124,4 +155,29 @@ LoadCommands() {
 	return commands
 }
 
+GetAllCommandsAsListBox() {
+	return GetCommandsAsListBox(LoadCommands())
+}
 
+GetFilteredCommandsAsListBox(partialCommand) {
+	commands := LoadCommands()
+	
+	filtered := []
+	for k, v in commands
+	{
+		if (RegExMatch(k, partialCommand) > 0) {
+			filtered[k] := v
+		}
+	}
+	
+	return GetCommandsAsListBox(filtered)
+}
+
+GetCommandsAsListBox(commands) {
+	listStr := ""
+	for k, v in commands
+	{
+		listStr := listStr . k . "|"
+	}
+	return listStr
+}
