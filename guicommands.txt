@@ -5,3 +5,20 @@ gg,notepad
 
 ; some more comments
 bb,notepad
+
+
+; common utilities
+n++,"C:\Program Files (x86)\Notepad++\notepad++.exe"
+notepad++,"C:\Program Files (x86)\Notepad++\notepad++.exe"
+
+ie,"C:\Program Files (x86)\Internet Explorer\iexplore.exe"
+internet explorer,"C:\Program Files (x86)\Internet Explorer\iexplore.exe"
+
+excel,"C:\Program Files (x86)\Microsoft Office\Office14\EXCEL.EXE"
+onenote,"C:\Program Files (x86)\Microsoft Office\Office14\ONENOTE.EXE"
+outlook,"C:\Program Files (x86)\Microsoft Office\Office14\OUTLOOK.EXE"
+ppt,"C:\Program Files (x86)\Microsoft Office\Office14\POWERPNT.EXE"
+powerpoint,"C:\Program Files (x86)\Microsoft Office\Office14\POWERPNT.EXE"
+word,"C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE"
+
+chrome,"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
