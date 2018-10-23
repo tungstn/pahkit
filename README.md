@@ -10,6 +10,7 @@ Written by Cameron Dinopoulos
 
 ## Getting Started
 - Install AutoHotKey for Windows
+- Download this project from the (github repo)[https://github.com/tungstn/pahkit]
 - Run the gui.ahk file from this project (consider creating a central startup.ahk script and simply using Include instead)
 - Use \<win\>+\<space\> to open the gui
 - Modify or create your own guicommands.ahk file to configure the commands
