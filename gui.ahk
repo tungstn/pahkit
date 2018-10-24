@@ -15,6 +15,9 @@ gui_init() {
 	global allCommands
 	allCommands := GetAllCommandsAsListBox()
 
+	global bAllowQuickCommandAfterSingleRecordMatch ; allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies
+	bAllowQuickCommandAfterSingleRecordMatch := false
+	
 	return
 }
 
@@ -48,6 +51,9 @@ gui_create:
 	
 	; link to help document
     Gui, Add, Link, , <a href="help.html">Help</a>
+	
+	Gui, Add, Button, gButtonReload x+10, &Reload
+	Gui, Add, Button, gButtonQuit x+10, &Quit
 	
 	; hidden submit button to capture the <enter> key and submit the form
 	Gui, Add, Button, Default w0 h0 gButtonSubmittedWithEnter, OK
@@ -86,6 +92,17 @@ ListBoxSubmitted:
 	
 	return
 
+
+
+ButtonReload:
+	gui_destroy()
+	Reload
+	return
+
+ButtonQuit:
+	gui_destroy()
+	ExitApp
+	return
 	
 ButtonSubmittedWithEnter:
 	Gui, Submit, NoHide
@@ -108,16 +125,18 @@ InputChanged:
 
 ProcessInput(input, delimiter = " ") {
     
-	if input = rel%delimiter% 
+	if input = rel%delimiter%
 	{
 		gui_destroy()
 		Reload
+		return
 	}
 	
 	if av = exit%delimiter%
 	{
 		gui_destroy()
 		ExitApp
+		return
 	}
 	
 	
@@ -126,6 +145,23 @@ ProcessInput(input, delimiter = " ") {
 		if (input = k . delimiter) {
 			gui_destroy()
 			Run % v
+			return
+		}
+	}
+	
+	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
+	; this saves frustration and keystrokes when you know what you have to type
+	global bAllowQuickCommandAfterSingleRecordMatch
+	if (bAllowQuickCommandAfterSingleRecordMatch = true)
+	{
+		filteredCommands := GetFilteredCommandsAsListBox(input)
+		matchesAsArray := StrSplit(filteredCommands, "|")
+		if (matchesAsArray.Length() = 2) {
+			;msgbox % "first match: " . StrSplit(filteredCommands, "|")[1]
+			firstMatchKey := matchesAsArray[1]
+			gui_destroy()
+			Run % LoadCommands()[firstMatchKey]
+			return
 		}
 	}
 	
