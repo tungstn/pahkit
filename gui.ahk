@@ -44,7 +44,7 @@ gui_create:
     gui_state = main
 
     Gui, Margin, 4, 4
-    Gui, +AlwaysOnTop -SysMenu +ToolWindow -caption +Border
+    Gui, +AlwaysOnTop +SysMenu +ToolWindow -caption +Border
     Gui, Font, s11, Consolas	
 	
 	
