@@ -16,6 +16,9 @@ gui_init() {
 	allCommands := GetAllCommandsAsListBox()
 
 	global autocompleteCommand ; allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies
+		; "off" 	to turn this setting off
+		; "submit" 	to allow autocomplete of the single matching command when you press enter (submit the form)
+		; "change" 	to allow autocomplete of the single matching command as soon as only 1 command remains matched
 	autocompleteCommand := "submit"
 	
 	return
@@ -112,7 +115,6 @@ ButtonSubmittedWithEnter:
 	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
 	; this saves frustration and keystrokes when you know what you have to type
 	global autocompleteCommand
-	;MsgBox % "submitted" . autocompleteCommand
 	if (autocompleteCommand = "submit")
 	{
 		AutoCompleteCommand(EditText)
