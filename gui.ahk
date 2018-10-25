@@ -12,6 +12,12 @@ gui_init() {
 	global gui_state
 	gui_state = closed
 	
+	global pathHelpFile 
+	pathHelpFile := "help.html" ; note that this will be relative to the working directory of the containing script
+	
+	global pathGuiCommands
+	pathGuiCommands := "guicommands.txt" ; note that this will be relative to the working directory of the containing script
+	
 	global allCommands
 	allCommands := GetAllCommandsAsListBox()
 
@@ -53,7 +59,7 @@ gui_create:
 	GuiControl, Choose, ListBoxSelection, 1
 	
 	; link to help document
-    Gui, Add, Link, , <a href="help.html">Help</a>
+    Gui, Add, Link, , <a href="%pathHelpFile%">Help</a>
 	
 	Gui, Add, Button, gButtonReload x+10, &Reload
 	Gui, Add, Button, gButtonQuit x+10, &Quit
@@ -191,8 +197,10 @@ AutoCompleteCommand(input) {
 
 
 LoadCommands() {
+	global pathGuiCommands
+
 	commands := []
-	loop, read, guicommands.txt
+	loop, read, %pathGuiCommands%
 	{
 		rawline := A_LoopReadLine
 		
