@@ -17,7 +17,8 @@ Written by Cameron Dinopoulos
 
 
 ## Configuration
-|- variable -|- description -|
+| variable | description |
+|:--------:|:-----------:|
 | pathHelpFile | ; note that this will be relative to the working directory of the containing script
 | pathGuiCommands | ; note that this will be relative to the working directory of the containing script
 | autocompleteCommand | ; allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies
