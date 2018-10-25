@@ -17,8 +17,10 @@ Written by Cameron Dinopoulos
 
 
 ## Configuration
+
+
 | variable | description |
 |:--------:|:-----------:|
-| pathHelpFile | Note that this will be relative to the working directory of the containing script
-| pathGuiCommands | Note that this will be relative to the working directory of the containing script
-| autocompleteCommand | Allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies.  "off" to turn this setting off, "submit" to allow autocomplete of the single matching command when you press enter (submit the form), "change" to allow autocomplete of the single matching command as soon as only 1 command remains matched
+| pathHelpFile | Note that this will be relative to the working directory of the containing script |
+| pathGuiCommands | Note that this will be relative to the working directory of the containing script |
+| autocompleteCommand | Allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies.  "off" to turn this setting off, "submit" to allow autocomplete of the single matching command when you press enter (submit the form), "change" to allow autocomplete of the single matching command as soon as only 1 command remains matched |
