@@ -15,8 +15,8 @@ gui_init() {
 	global allCommands
 	allCommands := GetAllCommandsAsListBox()
 
-	global bAllowQuickCommandAfterSingleRecordMatch ; allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies
-	bAllowQuickCommandAfterSingleRecordMatch := false
+	global autocompleteCommand ; allows for the gui to immediately run the single command that matches the input text, if more than one command matches the input, normal processing applies
+	autocompleteCommand := "submit"
 	
 	return
 }
@@ -107,6 +107,16 @@ ButtonQuit:
 ButtonSubmittedWithEnter:
 	Gui, Submit, NoHide
 	ProcessInput(EditText, "")	
+	
+		
+	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
+	; this saves frustration and keystrokes when you know what you have to type
+	global autocompleteCommand
+	;MsgBox % "submitted" . autocompleteCommand
+	if (autocompleteCommand = "submit")
+	{
+		AutoCompleteCommand(EditText)
+	}
 	return
 
 ; The callback function when the text changes in the input field.
@@ -120,6 +130,15 @@ InputChanged:
 	GuiControl, +Redraw, ListBoxSelection
 	GuiControl, Choose, ListBoxSelection, 1
 
+		
+	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
+	; this saves frustration and keystrokes when you know what you have to type
+	global autocompleteCommand
+	if (autocompleteCommand = "change")
+	{
+		AutoCompleteCommand(EditText)
+	}
+	
 	return
 
 
@@ -149,23 +168,23 @@ ProcessInput(input, delimiter = " ") {
 		}
 	}
 	
+    return
+}
+
+
+AutoCompleteCommand(input) {
+		
 	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
 	; this saves frustration and keystrokes when you know what you have to type
-	global bAllowQuickCommandAfterSingleRecordMatch
-	if (bAllowQuickCommandAfterSingleRecordMatch = true)
-	{
-		filteredCommands := GetFilteredCommandsAsListBox(input)
-		matchesAsArray := StrSplit(filteredCommands, "|")
-		if (matchesAsArray.Length() = 2) {
-			;msgbox % "first match: " . StrSplit(filteredCommands, "|")[1]
-			firstMatchKey := matchesAsArray[1]
-			gui_destroy()
-			Run % LoadCommands()[firstMatchKey]
-			return
-		}
+	filteredCommands := GetFilteredCommandsAsListBox(input)
+	matchesAsArray := StrSplit(filteredCommands, "|")
+	if (matchesAsArray.Length() = 2) {
+		;msgbox % "first match: " . StrSplit(filteredCommands, "|")[1]
+		firstMatchKey := matchesAsArray[1]
+		gui_destroy()
+		Run % LoadCommands()[firstMatchKey]
+		return
 	}
-	
-    return
 }
 
 
