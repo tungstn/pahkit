@@ -115,7 +115,7 @@ ButtonQuit:
 	
 ButtonSubmittedWithEnter:
 	Gui, Submit, NoHide
-	ProcessInput(EditText, "")	
+	matchFound := ProcessInput(EditText, "")	
 	
 		
 	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
@@ -123,28 +123,33 @@ ButtonSubmittedWithEnter:
 	global autocompleteCommand
 	if (autocompleteCommand = "submit")
 	{
-		AutoCompleteCommand(EditText)
+		if (!matchFound) {
+			AutoCompleteCommand(EditText)
+		}
 	}
 	return
 
 ; The callback function when the text changes in the input field.
 InputChanged:
 	Gui, Submit, NoHide
-	ProcessInput(EditText, A_Space)
+	
 	
 	filteredCommands := GetFilteredCommandsAsListBox(EditText)
 	GuiControl, -Redraw, ListBoxSelection		; To improve performance, don't redraw the list box until all items have been added.
 	GuiControl, , ListBoxSelection, |%filteredCommands%	; use a delimiter in front to clear all current contents before readding
 	GuiControl, +Redraw, ListBoxSelection
 	GuiControl, Choose, ListBoxSelection, 1
+	
+	matchFound := ProcessInput(EditText, A_Space)
 
-		
 	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
 	; this saves frustration and keystrokes when you know what you have to type
 	global autocompleteCommand
 	if (autocompleteCommand = "change")
 	{
-		AutoCompleteCommand(EditText)
+		if (!matchFound) {
+			AutoCompleteCommand(EditText)
+		}
 	}
 	
 	return
@@ -156,14 +161,14 @@ ProcessInput(input, delimiter = " ") {
 	{
 		gui_destroy()
 		Reload
-		return
+		return true
 	}
 	
 	if av = exit%delimiter%
 	{
 		gui_destroy()
 		ExitApp
-		return
+		return true
 	}
 	
 	
@@ -172,11 +177,11 @@ ProcessInput(input, delimiter = " ") {
 		if (input = k . delimiter) {
 			gui_destroy()
 			Run % v
-			return
+			return true
 		}
 	}
 	
-    return
+    return false
 }
 
 
