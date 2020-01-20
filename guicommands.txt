@@ -22,3 +22,4 @@ powerpoint,"C:\Program Files (x86)\Microsoft Office\Office14\POWERPNT.EXE"
 word,"C:\Program Files (x86)\Microsoft Office\Office14\WINWORD.EXE"
 
 chrome,"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
+cc,notepad

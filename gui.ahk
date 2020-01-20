@@ -26,7 +26,7 @@ gui_init() {
 		; "submit" 	to allow autocomplete of the single matching command when you press enter (submit the form)
 		; "change" 	to allow autocomplete of the single matching command as soon as only 1 command remains matched
 	autocompleteCommand := "submit"
-	
+
 	return
 }
 
@@ -43,9 +43,10 @@ gui_create:
 
     gui_state = main
 
-    Gui, Margin, 4, 4
+    Gui, Margin, 8, 8
     Gui, +AlwaysOnTop +SysMenu +ToolWindow -caption +Border
-    Gui, Font, s11, Consolas	
+    Gui, Font, s11, Consolas
+	; Gui, Color, aaeecc
 	
 	
     Gui, Add, Text, vgui_main_title, Search...
@@ -67,6 +68,9 @@ gui_create:
 	; hidden submit button to capture the <enter> key and submit the form
 	Gui, Add, Button, Default w0 h0 gButtonSubmittedWithEnter, OK
 	
+	; Show a default status bar at the bottom of the GUI.  This is used to show how many commands are loaded.
+	Gui, Add, StatusBar,, Config: %pathGuiCommands%
+
     Gui, Show,, myGUI
     return
 
@@ -118,7 +122,7 @@ ButtonSubmittedWithEnter:
 	matchFound := ProcessInput(EditText, "")	
 	
 		
-	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
+	; If no matches have been found so far, but only one selection exists in the filtered commands, run that command
 	; this saves frustration and keystrokes when you know what you have to type
 	global autocompleteCommand
 	if (autocompleteCommand = "submit")
@@ -132,8 +136,8 @@ ButtonSubmittedWithEnter:
 ; The callback function when the text changes in the input field.
 InputChanged:
 	Gui, Submit, NoHide
-	
-	
+
+	; Update the list box to only show the command shortcuts that match the text entered so far.
 	filteredCommands := GetFilteredCommandsAsListBox(EditText)
 	GuiControl, -Redraw, ListBoxSelection		; To improve performance, don't redraw the list box until all items have been added.
 	GuiControl, , ListBoxSelection, |%filteredCommands%	; use a delimiter in front to clear all current contents before readding
@@ -142,7 +146,7 @@ InputChanged:
 	
 	matchFound := ProcessInput(EditText, A_Space)
 
-	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
+	; If no matches have been found so far, but only one selection exists in the filtered commands, run that command
 	; this saves frustration and keystrokes when you know what you have to type
 	global autocompleteCommand
 	if (autocompleteCommand = "change")
@@ -151,10 +155,18 @@ InputChanged:
 			AutoCompleteCommand(EditText)
 		}
 	}
+
+	
+	; Update the status bar (at the bottom) to show the number of matches out of the total sum of commands
+	matchCount := GetFilteredCommandsAsArray(EditText).Count()
+	allCount := LoadCommands().Count()
+	SB_SetText(matchCount . "/" . allCount . " commands match")
 	
 	return
 
-
+; Process a given set of input (text) and evaluate whether or not it matches a given command shortcut.
+; Special "command shortcuts" are hardcoded for "rel" and "exit" which will reload the script and close the 
+; script, respectively.
 ProcessInput(input, delimiter = " ") {
     
 	if input = rel%delimiter%
@@ -185,10 +197,10 @@ ProcessInput(input, delimiter = " ") {
 }
 
 
+; If no matches have been found so far, but only one selection exists in the filtered commands, run that command
+; this saves frustration and keystrokes when you know what you have to type.
 AutoCompleteCommand(input) {
 		
-	; if no matches have been found so far, but only one selection exists in the filtered commands, run that command
-	; this saves frustration and keystrokes when you know what you have to type
 	filteredCommands := GetFilteredCommandsAsListBox(input)
 	matchesAsArray := StrSplit(filteredCommands, "|")
 	if (matchesAsArray.Length() = 2) {
@@ -200,7 +212,11 @@ AutoCompleteCommand(input) {
 	}
 }
 
-
+; Reads commands from a configuration file.
+; Commands are of the following grammar: ([^,]),(.*)\n where the first capture is the "command shortcut", and the second capture
+; is the actual executable "command".
+; Commands can be nested AHK scripts/syntax, or executable syscalls.
+; LoadCommands().Length() will return the total number of valid commands pairs.
 LoadCommands() {
 	global pathGuiCommands
 
@@ -225,11 +241,14 @@ LoadCommands() {
 	return commands
 }
 
+; Returns a string where all valid commands are delimited by a "|" for all commands found in the config file.
 GetAllCommandsAsListBox() {
 	return GetCommandsAsListBox(LoadCommands())
 }
 
-GetFilteredCommandsAsListBox(partialCommand) {
+; Returns a key value map/Array containing only those commands which match a given partialCommand
+GetFilteredCommandsAsArray(partialCommand) {
+
 	commands := LoadCommands()
 	
 	filtered := []
@@ -239,10 +258,16 @@ GetFilteredCommandsAsListBox(partialCommand) {
 			filtered[k] := v
 		}
 	}
-	
-	return GetCommandsAsListBox(filtered)
+	return filtered
 }
 
+; Returns a delimited string (|) containing only those commands which match a given partialCommand
+GetFilteredCommandsAsListBox(partialCommand) {
+	
+	return GetCommandsAsListBox(GetFilteredCommandsAsArray(partialCommand))
+}
+
+; Returns a string where all valid commands are delimited by a "|".
 GetCommandsAsListBox(commands) {
 	listStr := ""
 	for k, v in commands
